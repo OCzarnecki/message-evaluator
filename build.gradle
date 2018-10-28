@@ -1,25 +1,67 @@
+// plugin dependencies
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-clover-plugin:2.2.1'
+    }
+}
+
+// plugins
 plugins {
     id 'java'
     id 'groovy'
+    id 'org.sonarqube' version '2.6'
 }
+apply plugin: 'com.bmuschko.clover'
 
-group 'olaf'
+// general project settings
+group 'com,github.oczarnecki'
 version '1.0-SNAPSHOT'
-
 sourceCompatibility = 1.8
 
+// project repositories
 repositories {
     mavenCentral()
 }
 
+// project dependencies
 dependencies {
-    testCompile "org.spockframework:spock-core:1.1-groovy-2.4-rc-2"
+    // json api and implementation
+    implementation 'javax.json:javax.json-api:1.0'
+    implementation 'org.glassfish:javax.json:1.1.3'
+
+
+    // spock framework and dependencies
+    testImplementation 'org.spockframework:spock-core:1.1-groovy-2.4-rc-2'
+    testImplementation 'org.codehaus.groovy:groovy-all:2.4.15'
+    testImplementation 'cglib:cglib-nodep:2.2'
+    // automatic equals and hashCode verification
+    testImplementation 'nl.jqno.equalsverifier:equalsverifier:3.0'
+
+
+    // clover static code analysis
+    clover 'org.openclover:clover:4.2.0'
 }
 
+// configuration of the jar file
 jar {
     manifest {
         attributes(
-                'Main-Class': 'MessageEvaluator'
+                'Main-Class': 'com.github.oczarnecki.messageevaluator.MessageEvaluator'
         )
     }
+
+    // package all dependencies into the jar file
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+// generate the clover report only in html format
+report {
+    xml = false
+    html = true
 }
