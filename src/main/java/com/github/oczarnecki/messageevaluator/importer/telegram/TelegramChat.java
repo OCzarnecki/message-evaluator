@@ -1,4 +1,4 @@
-package com.github.oczarnecki.messageevaluator.telegram;
+package com.github.oczarnecki.messageevaluator.importer.telegram;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,0 +1,29 @@
+{
+  "about": "This example holds one chat with one message",
+  "chats": {
+    "list": [
+      {
+        "name": "Chat 1",
+        "messages": [
+          {
+            "type": "message",
+            "date": "2016-11-24T06:00:00",
+            "from": "Sender",
+            "text": "Message text"
+          }
+        ]
+      },
+      {
+        "name": "Chat 2",
+        "messages": [
+          {
+            "type": "message",
+            "date": "2016-12-24T06:00:00",
+            "from": "Sender",
+            "text": "Message text"
+          }
+        ]
+      }
+    ]
+  }
+}

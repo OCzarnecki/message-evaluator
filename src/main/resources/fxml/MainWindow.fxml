@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane xmlns:fx="http://javafx.com/javafx"
+            prefHeight="600.0" prefWidth="800.0">
+    <top>
+        <MenuBar>
+            <Menu text="File">
+                <MenuItem text="Import" onAction="#importTgData"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <center>
+        <fx:include fx:id="histogram" source="MessageHistogram.fxml"/>
+    </center>
+</BorderPane>

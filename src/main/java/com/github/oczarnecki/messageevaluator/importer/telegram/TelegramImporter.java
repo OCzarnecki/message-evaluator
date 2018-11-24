@@ -1,7 +1,10 @@
-package com.github.oczarnecki.messageevaluator.telegram;
+package com.github.oczarnecki.messageevaluator.importer.telegram;
 
 import javax.json.*;
 import javax.json.stream.JsonParsingException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -36,6 +39,20 @@ public final class TelegramImporter {
      */
     public TelegramImporter(InputStream input) {
         this.input = input;
+    }
+
+    /**
+     * Create a new Importer with an underlying file input stream.
+     *
+     * @param dataFile the file from which to create the {@link InputStream}
+     * @throws ImportException when {@link FileInputStream#FileInputStream(File)} throws a FileNotFoundException
+     */
+    public TelegramImporter(File dataFile) throws ImportException {
+        try {
+            this.input = new FileInputStream(dataFile);
+        } catch (FileNotFoundException exception) {
+            throw new ImportException("source file does not exist, is not readable or is no file", exception);
+        }
     }
 
 

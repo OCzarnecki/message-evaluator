@@ -1,4 +1,4 @@
-package com.github.oczarnecki.messageevaluator.telegram;
+package com.github.oczarnecki.messageevaluator.importer.telegram;
 
 /**
  * Checked {@link Exception} that might occur while importing data from an external source.

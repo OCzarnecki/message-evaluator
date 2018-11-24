@@ -1,4 +1,4 @@
-package com.github.oczarnecki.messageevaluator.telegram
+package com.github.oczarnecki.messageevaluator.importer.telegram
 
 import spock.lang.Specification
 import spock.lang.Subject
@@ -136,6 +136,15 @@ class TelegramImporterSpec extends Specification {
 
         then: 'the result is a flattened text'
         parsedText == 'text #composite'
+    }
+
+    def "creating with an invalid file causes an ImportException"() {
+        when: 'a non-existent file is passed'
+        //noinspection GroovyResultOfObjectAllocationIgnored
+        new TelegramImporter(new File('$does-not-exist.json'))
+
+        then: "an ImportException is thrown"
+        thrown(ImportException)
     }
 
     InputStream inputStreamFromString(String str) {

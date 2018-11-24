@@ -1,4 +1,4 @@
-package com.github.oczarnecki.messageevaluator.telegram;
+package com.github.oczarnecki.messageevaluator.importer.telegram;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

@@ -1,0 +1,29 @@
+.pane {
+    -fx-border-color: black;
+}
+
+#chartSelectionBox {
+    -fx-padding: 15;
+    -fx-spacing: 5;
+    -fx-alignment: baseline-left;
+}
+
+#chartSelectionControls {
+    -fx-padding: 15;
+    -fx-spacing: 5;
+    -fx-alignment: bottom-center;
+}
+
+.chart {
+    -fx-background: #DDD;
+}
+
+.button {
+    -fx-max-width: Infinity;
+    -fx-padding: 10
+}
+
+.spacer {
+    -fx-max-height: Infinity;
+    -fx-font-weight: bold;
+}
