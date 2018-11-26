@@ -1,21 +1,11 @@
-.pane {
+.root {
     -fx-border-color: black;
-}
-
-#chartSelectionBox {
-    -fx-padding: 15;
-    -fx-spacing: 5;
-    -fx-alignment: baseline-left;
-}
-
-#chartSelectionControls {
-    -fx-padding: 15;
-    -fx-spacing: 5;
-    -fx-alignment: bottom-center;
+    -fx-font-color: green;
+    -fx-background: white;
 }
 
 .chart {
-    -fx-background: #DDD;
+    -fx-background: #FCFCFC;
 }
 
 .button {
@@ -26,4 +16,10 @@
 .spacer {
     -fx-max-height: Infinity;
     -fx-font-weight: bold;
+}
+
+VBox, HBox {
+    -fx-padding: 15;
+    -fx-spacing: 5;
+    -fx-alignment: baseline-left;
 }

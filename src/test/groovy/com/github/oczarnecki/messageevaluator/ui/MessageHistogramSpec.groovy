@@ -43,7 +43,7 @@ class MessageHistogramSpec extends ApplicationSpec {
 
     def "the correct checkboxes are shown"() {
         given: 'the checkbox container'
-        Pane checkBoxes = lookup('#chartSelectionBox').query()
+        Pane checkBoxes = lookup('#chartSelectionControlBox').query()
 
 
         when: 'the application starts'

@@ -2,9 +2,14 @@ package com.github.oczarnecki.messageevaluator.ui;
 
 import com.github.oczarnecki.messageevaluator.TelegramDataModel;
 import com.github.oczarnecki.messageevaluator.importer.telegram.TelegramChat;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 import java.util.Collection;
@@ -12,16 +17,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.time.temporal.ChronoField.EPOCH_DAY;
-
 public class MessageHistogramController {
     @FXML
-    private XYChart<Number, Number> histogramChart;
+    private BorderPane histogramPane;
+
+    /**
+     * Container of all the check boxes used to de-/select a chart for display
+     */
+    @FXML
+    private VBox chartSelectionControlBox;
 
     @FXML
-    private VBox chartSelectionBox;
+    private ComboBox<TimeUnit> histogramUnitComboBox;
 
+    @FXML
+    private DatePicker fromDatePicker;
+
+    @FXML
+    private DatePicker toDatePicker;
+
+    @FXML
+    private HistogramChartController histogramChartController;
+
+    /**
+     * Maps a chat's name to its data series
+     */
     private Map<String, XYChart.Series<Number, Number>> chatSeries;
+
+    private TelegramDataModel telegramDataModel;
 
     /**
      * Constructor
@@ -32,36 +55,73 @@ public class MessageHistogramController {
 
     @FXML
     private void initialize() {
-        histogramChart.setAnimated(false);
+        histogramUnitComboBox.setItems(FXCollections.observableArrayList(TimeUnit.values()));
+        histogramUnitComboBox.setValue(TimeUnit.AUTOMATIC);
+        histogramUnitComboBox.valueProperty().addListener((ignored) -> recalculateChartSeries());
+
+        fromDatePicker.valueProperty().addListener((ignored) -> adjustBounds());
+        toDatePicker.valueProperty().addListener((ignored) -> adjustBounds());
     }
 
-    public void selectAll() {
+    @FXML
+    private void selectAll() {
         setCheckBoxesSelected(true);
     }
 
-    public void deselectAll() {
+    @FXML
+    private void deselectAll() {
         setCheckBoxesSelected(false);
     }
 
-    private void setCheckBoxesSelected(boolean selected) {
-        chartSelectionBox.getChildren().forEach(checkBox -> ((CheckBox) checkBox).setSelected(selected));
+    @FXML
+    private void maximalRange() {
+        fromDatePicker.setValue(null);
+        toDatePicker.setValue(null);
+        adjustBounds();
     }
 
-    public void chatsChanged(TelegramDataModel tgModel) {
-        chartSelectionBox.getChildren().clear();
-        chatSeries.clear();
+    private void setCheckBoxesSelected(boolean selected) {
+        getChartSelectionCheckBoxes().forEach(checkBox -> checkBox.setSelected(selected));
+    }
 
-        Collection<TelegramChat> chats = tgModel.getChats();
-        chartSelectionBox.getChildren().addAll(
-                chats.stream()
-                        .map(this::chartCheckboxChanged)
+    /**
+     * Called when the DataModel changes.
+     *
+     * @param tgModel the data model, in its new state
+     */
+    public void chatsChanged(TelegramDataModel tgModel) {
+        this.telegramDataModel = tgModel;
+
+        // recalculate data series
+        recalculateChartSeries();
+
+        // recreate check boxes
+        getChartSelectionCheckBoxes().clear();
+        Collection<TelegramChat> chats = telegramDataModel.getChats();
+        getChartSelectionCheckBoxes().addAll(chats.stream()
+                        .map(this::createCheckboxForChat)
                         .collect(Collectors.toList()));
 
-        chats.forEach(chat -> chatSeries.put(chat.getName(), toDataSeries(chat)));
-        selectAll();
+        histogramPane.setDisable(chats.isEmpty());
     }
 
-    private CheckBox chartCheckboxChanged(TelegramChat chat) {
+    private ObservableList<CheckBox> getChartSelectionCheckBoxes() {
+        //noinspection unchecked
+        return (ObservableList<CheckBox>) (ObservableList<?>) chartSelectionControlBox.getChildren();
+    }
+
+    private void adjustBounds() {
+        if (fromDatePicker.getValue() == null) {
+            fromDatePicker.setValue(telegramDataModel.getEarliestEntryTimestamp().toLocalDate());
+        }
+        if (toDatePicker.getValue() == null) {
+            toDatePicker.setValue(telegramDataModel.getLatestEntryTimestamp().toLocalDate());
+        }
+        histogramChartController.setBounds(fromDatePicker.getValue().atTime(0, 0),
+                toDatePicker.getValue().atTime(23, 59, 59));
+    }
+
+    private CheckBox createCheckboxForChat(TelegramChat chat) {
         CheckBox checkBox = new CheckBox(chat.getName());
         checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             XYChart.Series<Number, Number> series = chatSeries.get(checkBox.getText());
@@ -71,18 +131,44 @@ public class MessageHistogramController {
                 histogramChart.getData().remove(series);
             }
         });
+        checkBox.setSelected(true);
         return checkBox;
+    }
+
+    private void recalculateChartSeries() {
+        histogramChart.getData().clear();
+
+        adjustBounds();
+
+        Collection<TelegramChat> chats = telegramDataModel.getChats();
+        chats.forEach(chat -> chatSeries.put(chat.getName(), toDataSeries(chat)));
+
+        getChartSelectionCheckBoxes().stream()
+                .filter(CheckBox::isSelected)
+                .forEach(checkBox -> {
+            checkBox.setSelected(false);
+            checkBox.setSelected(true);
+        });
     }
 
     private XYChart.Series<Number, Number> toDataSeries(TelegramChat telegramChat) {
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
         series.setName(telegramChat.getName());
-        Map<Long, Double> histogram = new HashMap<>();
+
+        Map<Long, Integer> histogram = new HashMap<>();
+        for (long unixIndex = getUnixIndex(telegramDataModel.getEarliestEntryTimestamp());
+             unixIndex <= getUnixIndex(telegramDataModel.getLatestEntryTimestamp());
+             unixIndex++) {
+            histogram.put(unixIndex, 0);
+        }
+
         telegramChat.getMessages().forEach(message -> {
-            long days = message.getTimestamp().getLong(EPOCH_DAY) / 30;
-            histogram.put(days, 1 + histogram.getOrDefault(days, 0.0));
+            long index = getUnixIndex(message.getTimestamp());
+            histogram.put(index, 1 + histogram.get(index));
         });
         histogram.forEach((key, value) -> series.getData().add(new XYChart.Data<>(key, (value))));
         return series;
     }
+
+    // TODO set histogram unit in chart
 }

@@ -3,13 +3,14 @@ package com.github.oczarnecki.messageevaluator;
 import com.github.oczarnecki.messageevaluator.importer.telegram.ImportException;
 import com.github.oczarnecki.messageevaluator.importer.telegram.TelegramChat;
 import com.github.oczarnecki.messageevaluator.importer.telegram.TelegramImporter;
+import com.github.oczarnecki.messageevaluator.importer.telegram.TelegramMessage;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The model represents a collection of {@link TelegramChat}s. Listeners can be added to it, which get notified when the
@@ -18,6 +19,8 @@ import java.util.function.Consumer;
 public final class TelegramDataModel {
     private Collection<TelegramChat> chats;
     private Collection<Consumer<TelegramDataModel>> changeListeners;
+    private LocalDateTime earliestTimestamp;
+    private LocalDateTime latestTimestamp;
 
     /**
      * Constructor
@@ -28,7 +31,7 @@ public final class TelegramDataModel {
     }
 
     /**
-     * @return an unmodifiable view on this model's collection of chats
+     * @return an unmodifiable view of this model's collection of chats
      */
     public Collection<TelegramChat> getChats() {
         return Collections.unmodifiableCollection(chats);
@@ -42,6 +45,8 @@ public final class TelegramDataModel {
     private void setChats(Collection<TelegramChat> chats) {
         Objects.requireNonNull(chats);
         this.chats = chats;
+        recalculateBounds();
+
         changeListeners.forEach(listener -> listener.accept(this));
     }
 
@@ -65,5 +70,24 @@ public final class TelegramDataModel {
      */
     public void importTgData(File dataFile) throws ImportException {
         setChats(new TelegramImporter(dataFile).importChats());
+    }
+
+    public LocalDateTime getEarliestEntryTimestamp() {
+        return earliestTimestamp;
+    }
+
+    public LocalDateTime getLatestEntryTimestamp() {
+        return latestTimestamp;
+    }
+
+    private void recalculateBounds() {
+        List<LocalDateTime> timestamps = chats.stream()
+                .map(chat -> chat.getMessages().stream())
+                .reduce(Stream::concat)
+                .orElse(Stream.empty())
+                .map(TelegramMessage::getTimestamp)
+                .collect(Collectors.toList());
+        earliestTimestamp = timestamps.stream().min(LocalDateTime::compareTo).orElse(null);
+        latestTimestamp = timestamps.stream().max(LocalDateTime::compareTo).orElse(null);
     }
 }

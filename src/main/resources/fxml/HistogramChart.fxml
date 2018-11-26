@@ -1,0 +1,14 @@
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.LineChart?>
+<LineChart xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.github.oczarnecki.messageevaluator.ui.HistogramChartController"
+           animated="false"
+           fx:id="histogramChart">
+    <xAxis>
+        <NumberAxis fx:id="xAxis" autoRanging="false"/>
+    </xAxis>
+    <yAxis>
+        <NumberAxis fx:id="yAxis"/>
+    </yAxis>
+</LineChart>

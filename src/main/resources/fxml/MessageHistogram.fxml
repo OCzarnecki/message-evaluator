@@ -1,36 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.github.oczarnecki.messageevaluator.ui.MessageHistogramController"
-            prefHeight="400.0" prefWidth="600.0">
+            prefHeight="400.0" prefWidth="600.0"
+            fx:id="histogramPane">
+    <stylesheets>
+        <URL value="@../css/style.css"/>
+    </stylesheets>
+
     <center>
-        <LineChart fx:id="histogramChart">
-            <xAxis>
-                <NumberAxis lowerBound="552" upperBound="600" tickUnit="6" autoRanging="false"/>
-            </xAxis>
-            <yAxis>
-                <NumberAxis/>
-            </yAxis>
-        </LineChart>
+        <fx:include fx:id="histogramChart" source="HistogramChart.fxml"/>
     </center>
 
     <right>
         <BorderPane>
             <top>
-                <VBox fx:id="chartSelectionBox"/>
+                <VBox fx:id="chartSelectionControlBox"/>
             </top>
             <bottom>
-                <VBox fx:id="chartSelectionControls">
+                <VBox>
                     <Button text="Select all" onAction="#selectAll"/>
                     <Button text="Select none" onAction="#deselectAll"/>
                 </VBox>
             </bottom>
         </BorderPane>
     </right>
+
+    <bottom>
+        <HBox>
+            <Label text="Smallest unit:"/>
+            <ComboBox fx:id="histogramUnitComboBox"/>
+            <Label text="From:"/>
+            <DatePicker fx:id="fromDatePicker"/>
+            <Label text="To:"/>
+            <DatePicker fx:id="toDatePicker"/>
+            <Button text="Maximal range" onAction="#maximalRange"/>
+        </HBox>
+    </bottom>
 </BorderPane>

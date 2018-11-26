@@ -29,7 +29,6 @@ public class MessageEvaluator extends Application {
         loader.setController(mainWindowController);
 
         Scene scene = new Scene(loader.load());
-        scene.getStylesheets().add(ResourcePaths.MAIN_STYLESHEET);
 
         stage.setScene(scene);
         stage.show();
